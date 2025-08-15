@@ -1,15 +1,16 @@
 ﻿{
-    "version":  2,
-    "outputDirectory":  "dist",
-    "projectId":  "prj_RW2Df5XteE00YC94JpgPGJvgj9HU0",
-    "scope":  "team_e6nD07t8aV61vAQqMIqzEYRk",
-    "framework":  "vite",
-    "rewrites":  [
-                     {
-                         "destination":  "/index.html",
-                         "source":  "/(.*)"
-                     }
-                 ],
-    "buildCommand":  "npm run build",
-    "installCommand":  "npm install"
+  "version": 2,
+  "builds": [
+    {
+      "src": "vite.config.*",
+      "use": "@vercel/static-build",
+      "config": {}
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
