@@ -4,6 +4,8 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "projectId": "pm0oov54",
+  "orgId": "team_xxxxxx",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
