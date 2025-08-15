@@ -19,13 +19,56 @@ const NewCalendarView = ({ role, user }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(''); // 'left' или 'right'
 
+  // Состояние для формы нового события
+  const [newEventForm, setNewEventForm] = useState({
+    title: '',
+    description: ''
+  });
+  const [selectedDate, setSelectedDate] = useState(null);
+
   // Функции для управления модальным окном
-  const openModal = () => {
+  const openModal = (date) => {
+    setSelectedDate(date);
+    setNewEventForm({ title: '', description: '' });
     document.getElementById('modal').classList.add('active');
   };
 
   const closeModal = () => {
     document.getElementById('modal').classList.remove('active');
+    setSelectedDate(null);
+    setNewEventForm({ title: '', description: '' });
+  };
+
+  // Обработчик изменения полей формы
+  const handleFormChange = (field, value) => {
+    setNewEventForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Обработчик сохранения нового события
+  const handleSaveEvent = async () => {
+    if (!newEventForm.title.trim() || !selectedDate) {
+      return;
+    }
+
+    const eventData = {
+      id: Date.now().toString(),
+      title: newEventForm.title.trim(),
+      description: newEventForm.description.trim(),
+      date: toDateOnlyString(selectedDate),
+      createdBy: user?.uid || 'anonymous',
+      createdAt: Date.now(),
+      attachments: []
+    };
+
+    try {
+      await setDoc(doc(db, 'events', eventData.id), eventData);
+      closeModal();
+    } catch (error) {
+      console.error('Ошибка при сохранении события:', error);
+    }
   };
 
   // Загрузка событий из Firebase
@@ -154,7 +197,7 @@ const NewCalendarView = ({ role, user }) => {
 
   const handleAddEvent = (day) => {
     console.log('Добавить событие для даты:', toDateOnlyString(day));
-    openModal();
+    openModal(day);
   };
 
   // SVG иконки стрелок навигации
@@ -343,7 +386,30 @@ const NewCalendarView = ({ role, user }) => {
         <div className="modal-window">
           <button className="close-modal">&times;</button>
           <h2>Новое событие</h2>
-          <p>Здесь будет форма или текст.</p>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleSaveEvent();
+          }}>
+            <div className="form-group">
+              <label htmlFor="eventTitle">Название события:</label>
+              <input
+                type="text"
+                id="eventTitle"
+                value={newEventForm.title}
+                onChange={(e) => handleFormChange('title', e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventDescription">Описание:</label>
+              <textarea
+                id="eventDescription"
+                value={newEventForm.description}
+                onChange={(e) => handleFormChange('description', e.target.value)}
+              />
+            </div>
+            <button type="submit" className="save-event-btn">Сохранить событие</button>
+          </form>
         </div>
       </div>
     </div>
