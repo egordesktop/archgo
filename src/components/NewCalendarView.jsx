@@ -115,6 +115,10 @@ const NewCalendarView = ({ role, user }) => {
     }
   };
 
+  const handleAddEvent = (day) => {
+    console.log('Добавить событие для даты:', toDateOnlyString(day));
+  };
+
   // SVG иконки стрелок навигации
   const ArrowLeft = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -222,7 +226,7 @@ const NewCalendarView = ({ role, user }) => {
                     return (
                       <div
                         key={key}
-                        className={`calendar-day ${
+                        className={`calendar-day calendar-date ${
                           !day ? 'empty' : ''
                         } ${
                           dayEvents.length > 0 ? 'has-events' : ''
@@ -244,6 +248,16 @@ const NewCalendarView = ({ role, user }) => {
                                 {dayEvents.length} событий
                               </div>
                             )}
+                            <button
+                              className="add-event-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddEvent(day);
+                              }}
+                              title="Добавить событие"
+                            >
+                              +
+                            </button>
                           </>
                         )}
                       </div>
