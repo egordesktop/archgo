@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--accent-terracota: #D06224;
+	--accent-chile: #AE431E;
+	--accent-olive: #8A8635;
+	--accent-sunset: #EAC891;
+	--text-primary: #333333;
+	--border-light: #e0e0e0;
+	--border-selected: #e1d0b8;
+	--bg-selected: #f5e6d3;
+}
+
+body {
+	@apply bg-white text-black antialiased;
+	font-family: 'Inter', sans-serif;
+}
+
+.font-inter {
+	font-family: 'Inter', sans-serif;
+}
+
+.btn {
+	@apply inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors;
+}
+
+.btn-primary {
+	@apply bg-black text-white hover:bg-neutral-800;
+}
+
+.btn-accent {
+	background-color: var(--accent-terracota);
+	@apply text-white hover:opacity-90;
+}
+
+.input {
+	@apply w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-black;
+}
+
+.card {
+	@apply rounded-lg border border-neutral-200 bg-white shadow-sm;
+}
+
+.nav-button {
+	color: #666666;
+	padding: 8px 16px;
+	border-radius: 4px;
+	transition: background-color 0.2s;
+}
+
+.nav-button:hover {
+	background-color: #f0f0f0;
+}
+
+.header-button {
+	padding: 8px 16px;
+	border-radius: 6px;
+	font-weight: 500;
+	transition: all 0.2s;
+}
+
+.header-button.active {
+	background-color: #000000;
+	color: #ffffff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-button.inactive {
+	background-color: #ffffff;
+	color: #000000;
+	border: 1px solid #d1d5db;
+}
+
+/* Кнопка "Выйти" в правом верхнем углу */
+.logout-btn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 10;
+}
+
+/* Блок с кнопками "Календарь" и "Список дедлайнов" */
+.top-calendar-buttons {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+	justify-content: center;
+}
+
+/* Кнопки "Назад", "Сегодня", "Вперёд" */
+.calendar-nav {
+	display: flex;
+	gap: 8px;
+	justify-content: center;
+}
+
+/* Calendar Navigation Buttons */
+.calendar-navigation {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.calendar-navigation button {
+	padding: 6px 12px;
+	border: 1px solid #ccc;
+	background-color: #fff;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.calendar-navigation button:hover {
+	background-color: #f0f0f0;
+}
+
+/* Число в ячейке календаря */
+.calendar-cell {
+	position: relative;
+}
+
+.calendar-cell-day {
+	position: relative;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+/* Mobile menu styles */
+.mobile-menu {
+	animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Modal Animation */
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+	.logout-btn {
+		top: 5px;
+		right: 5px;
+		padding: 6px 12px;
+		font-size: 12px;
+	}
+	
+	.top-calendar-buttons {
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: 8px;
+	}
+	
+	.calendar-nav {
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+	
+	.calendar-navigation {
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: 8px;
+	}
+	
+	.calendar-navigation button {
+		padding: 4px 8px;
+		font-size: 12px;
+	}
+}
+
+/* Стили для модального окна EventModal */
+@media (max-width: 768px) {
+	.modal-container {
+		background-color: #fff;
+		opacity: 1 !important;
+	}
+}
+
+.modal-backdrop {
+	background: rgba(0, 0, 0, 0.5);
+}
+
+
