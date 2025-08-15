@@ -355,3 +355,73 @@
     font-size: 13px;
   }
 }
+
+/* Стили для модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 1000;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-window {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              opacity 0.35s ease;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-overlay.active .modal-window {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.close-modal:hover {
+  color: #374151;
+}
+
+.modal-window h2 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-window p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}

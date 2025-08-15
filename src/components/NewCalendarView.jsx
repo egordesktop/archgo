@@ -19,6 +19,15 @@ const NewCalendarView = ({ role, user }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(''); // 'left' или 'right'
 
+  // Функции для управления модальным окном
+  const openModal = () => {
+    document.getElementById('modal').classList.add('active');
+  };
+
+  const closeModal = () => {
+    document.getElementById('modal').classList.remove('active');
+  };
+
   // Загрузка событий из Firebase
   useEffect(() => {
     const q = query(collection(db, 'events'));
@@ -33,6 +42,34 @@ const NewCalendarView = ({ role, user }) => {
       }
     });
     return () => unsub();
+  }, []);
+
+  // useEffect для навешивания обработчиков событий на модальное окно
+  useEffect(() => {
+    const modal = document.getElementById('modal');
+    const closeBtn = document.querySelector('.close-modal');
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeModal);
+    }
+    
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target.id === 'modal') {
+          closeModal();
+        }
+      });
+    }
+
+    // Очистка обработчиков
+    return () => {
+      if (closeBtn) {
+        closeBtn.removeEventListener('click', closeModal);
+      }
+      if (modal) {
+        modal.removeEventListener('click', closeModal);
+      }
+    };
   }, []);
 
   // Функция для создания тестовых событий
@@ -117,6 +154,7 @@ const NewCalendarView = ({ role, user }) => {
 
   const handleAddEvent = (day) => {
     console.log('Добавить событие для даты:', toDateOnlyString(day));
+    openModal();
   };
 
   // SVG иконки стрелок навигации
@@ -299,6 +337,15 @@ const NewCalendarView = ({ role, user }) => {
           event={selectedEvent}
         />
       )}
+
+      {/* Модальное окно для добавления нового события */}
+      <div className="modal-overlay" id="modal">
+        <div className="modal-window">
+          <button className="close-modal">&times;</button>
+          <h2>Новое событие</h2>
+          <p>Здесь будет форма или текст.</p>
+        </div>
+      </div>
     </div>
   );
 };
