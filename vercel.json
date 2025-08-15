@@ -1,12 +1,15 @@
-{
-  "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": "vite",
-  "projectId": "pm0oov54",
-  "orgId": "team_xxxxxx",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+﻿{
+    "version":  2,
+    "outputDirectory":  "dist",
+    "projectId":  "prj_RW2Df5XteE00YC94JpgPGJvgj9HU0",
+    "scope":  "team_e6nD07t8aV61vAQqMIqzEYRk",
+    "framework":  "vite",
+    "rewrites":  [
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/(.*)"
+                     }
+                 ],
+    "buildCommand":  "npm run build",
+    "installCommand":  "npm install"
 }

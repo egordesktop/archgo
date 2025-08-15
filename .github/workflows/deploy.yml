@@ -1,8 +1,8 @@
-name: Deploy to Vercel
+﻿name: Deploy to Vercel
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, main, master ]
 
 jobs:
   deploy:
@@ -29,6 +29,6 @@ jobs:
       uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: team_xxxxxx
-        vercel-project-id: pm0oov54
+        vercel-org-id: ${{ secrets.VERCEL_TEAM_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
         vercel-args: '--prod'
