@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview --port 4173",
     "deploy": "vercel --prod --token Pm1LQvzpaIGtlc5Gsvk975Et",
-    "setup-deploy": "node auto-deploy-setup.cjs"
+    "setup-deploy": "node auto-deploy-setup.cjs",
+    "check-deploy": "node check-deployment.cjs"
   },
   "dependencies": {
     "date-fns": "^3.6.0",
