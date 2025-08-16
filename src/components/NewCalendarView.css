@@ -569,21 +569,26 @@
 .today-highlight {
   border: 2px solid transparent;
   border-radius: 10px;
-  animation: pulseBorder 6s infinite ease-in-out;
-  transition: box-shadow 0.8s ease, border-color 0.8s ease;
+  transition: box-shadow 0.8s ease, border-color 0.8s ease, transform 0.8s ease;
   box-shadow: 0 0 0 0 rgba(59,130,246,0);
+  transform: scale(1);
   position: relative;
   z-index: 1;
 }
 
 .today-highlight.active {
   border-color: #3b82f6;
-  box-shadow: 0 0 20px 8px rgba(59,130,246,0.25);
+  animation: pulseBorder 4s infinite ease-in-out, pulseScale 3.5s infinite ease-in-out;
+}
+
+.today-highlight.bounce {
+  animation: bounceIn 0.6s ease-out forwards;
 }
 
 .today-highlight.fade-out {
   box-shadow: 0 0 0 0 rgba(59,130,246,0);
   border-color: transparent;
+  transform: scale(1);
 }
 
 @keyframes pulseBorder {
@@ -591,4 +596,22 @@
   40%  { box-shadow: 0 0 20px 8px rgba(59,130,246,0.25); }
   60%  { box-shadow: 0 0 20px 8px rgba(59,130,246,0.25); }
   100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+}
+
+@keyframes pulseScale {
+  0%   { transform: scale(0.97); }
+  30%  { transform: scale(1.03); }
+  40%  { transform: scale(1.05); } /* лёгкий овершут */
+  50%  { transform: scale(1.02); } /* возврат */
+  60%  { transform: scale(1.03); }
+  80%  { transform: scale(0.95); } /* лёгкий овершут вниз */
+  90%  { transform: scale(0.98); } /* возврат */
+  100% { transform: scale(0.97); }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.07); }
+  60%  { transform: scale(1.02); }
+  100% { transform: scale(1.03); }
 }

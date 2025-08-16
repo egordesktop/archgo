@@ -130,7 +130,7 @@ const NewCalendarView = ({ role, user }) => {
           // Начинаем процесс плавного исчезновения
           setIsFadingOut(true);
           
-          // Через 800мс убираем оба класса, чтобы анимация успела завершиться
+          // Через 800мс убираем все классы, чтобы анимация успела завершиться
           setTimeout(() => {
             setHighlightedToday(false);
             setTodayElement(null);
@@ -138,7 +138,7 @@ const NewCalendarView = ({ role, user }) => {
             
             // Удаляем классы с элемента
             if (todayElement) {
-              todayElement.classList.remove("today-highlight", "active");
+              todayElement.classList.remove("today-highlight", "active", "bounce");
             }
           }, 800);
         }
@@ -214,7 +214,7 @@ const NewCalendarView = ({ role, user }) => {
         
         // Удаляем классы с элемента
         if (todayElement) {
-          todayElement.classList.remove("today-highlight", "active");
+          todayElement.classList.remove("today-highlight", "active", "bounce");
         }
       }, 800);
     }
@@ -236,7 +236,7 @@ const NewCalendarView = ({ role, user }) => {
     
     // Удаляем предыдущие подсветки
     document.querySelectorAll(".today-highlight").forEach(el => {
-      el.classList.remove("today-highlight", "active");
+      el.classList.remove("today-highlight", "active", "bounce");
     });
     
     // Всегда заново находим элемент сегодняшней даты после рендера
@@ -248,11 +248,14 @@ const NewCalendarView = ({ role, user }) => {
         setHighlightedToday(true);
         setIsFadingOut(false);
         
-        // Добавляем классы для плавного появления
-        todayElement.classList.add("today-highlight");
-        requestAnimationFrame(() => {
+        // Добавляем классы для плавного появления с bounce-эффектом
+        todayElement.classList.add("today-highlight", "bounce");
+        
+        // После завершения bounce-анимации переключаемся на обычное пульсирование
+        setTimeout(() => {
+          todayElement.classList.remove("bounce");
           todayElement.classList.add("active");
-        });
+        }, 600); // Длительность bounce-анимации
       }
     }, 100);
   };
