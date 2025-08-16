@@ -25,6 +25,12 @@ body {
 
 .btn {
 	@apply inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors;
+	transition: transform 0.25s ease-out;
+}
+
+.btn:hover {
+	animation: bounceHover 0.35s ease-out;
+	transform: scale(1.05);
 }
 
 .btn-primary {
@@ -48,18 +54,25 @@ body {
 	color: #666666;
 	padding: 8px 16px;
 	border-radius: 4px;
-	transition: background-color 0.2s;
+	transition: background-color 0.2s, transform 0.25s ease-out;
 }
 
 .nav-button:hover {
 	background-color: #f0f0f0;
+	animation: bounceHover 0.35s ease-out;
+	transform: scale(1.05);
 }
 
 .header-button {
 	padding: 8px 16px;
 	border-radius: 6px;
 	font-weight: 500;
-	transition: all 0.2s;
+	transition: all 0.2s, transform 0.25s ease-out;
+}
+
+.header-button:hover {
+	animation: bounceHover 0.35s ease-out;
+	transform: scale(1.05);
 }
 
 .header-button.active {
@@ -111,11 +124,13 @@ body {
 	background-color: #fff;
 	border-radius: 6px;
 	cursor: pointer;
-	transition: background-color 0.2s ease;
+	transition: background-color 0.2s ease, transform 0.25s ease-out;
 }
 
 .calendar-navigation button:hover {
 	background-color: #f0f0f0;
+	animation: bounceHover 0.35s ease-out;
+	transform: scale(1.05);
 }
 
 /* Число в ячейке календаря */
@@ -166,6 +181,13 @@ body {
 		opacity: 1;
 		transform: scale(1);
 	}
+}
+
+@keyframes bounceHover {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1.05); }
 }
 
 /* Адаптивность для мобильных устройств */
