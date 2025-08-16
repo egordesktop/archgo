@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { deleteObject, ref } from 'firebase/storage'
 import { storage } from '../firebase'
 import Comments from './Comments.jsx'

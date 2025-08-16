@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { collection, onSnapshot, query, setDoc, doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,15 +16,24 @@ const NewCalendarView = ({ role, user }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   
+  // Ref для кнопки календаря
+  const calendarBtnRef = useRef(null);
+  
+  // Универсальный паттерн управления анимациями
+  // Каждая анимация имеет свою переменную состояния:
+  // - isMonthAnimating: анимация перелистывания месяцев
+  // - isTodayAnimating: анимация выделения сегодняшней даты
+  
   // Состояние для анимации перелистывания
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isMonthAnimating, setIsMonthAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(''); // 'left' или 'right'
   
   // Состояние для выделения сегодняшней даты
-  const [highlightedToday, setHighlightedToday] = useState(false);
+  const [isTodayAnimating, setIsTodayAnimating] = useState(false);
   const [todayElement, setTodayElement] = useState(null);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [isStartingAnimation, setIsStartingAnimation] = useState(false);
+  const [isTodayActive, setIsTodayActive] = useState(false);
 
   // Состояние для формы нового события
   const [newEventForm, setNewEventForm] = useState({
@@ -122,30 +131,43 @@ const NewCalendarView = ({ role, user }) => {
     };
   }, []);
 
+  // Обработчик кликов вне сегодняшней ячейки
+  const handleClickOutside = useCallback((e) => {
+    // игнорируем клики по кнопке календаря
+    if (calendarBtnRef.current && calendarBtnRef.current.contains(e.target)) return;
+
+    if (!todayElement) return;
+
+    // игнорируем клики внутри активной today's-ячейки
+    if (todayElement.contains(e.target)) return;
+
+    // реальный "клик вне" - начинаем плавное затухание
+    if (isTodayActive || isTodayAnimating) {
+      setIsFadingOut(true);
+      // Удаляем классы активной анимации и добавляем класс затухания
+      if (todayElement) {
+        todayElement.classList.remove("active", "start");
+        todayElement.classList.add("fading-out");
+      }
+      
+      // После завершения анимации затухания сбрасываем все состояния
+      setTimeout(() => {
+        setIsTodayActive(false);
+        setIsTodayAnimating(false);
+        setTodayElement(null);
+        setIsFadingOut(false);
+        setIsStartingAnimation(false);
+        
+        // Удаляем все классы с элемента
+        if (todayElement) {
+          todayElement.classList.remove("today-highlight", "active", "bounce", "start", "fading-out");
+        }
+      }, 600); // Длительность анимации затухания
+    }
+  }, [todayElement, isTodayActive, isTodayAnimating]);
+
   // useEffect для обработки кликов вне сегодняшней ячейки
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (highlightedToday && todayElement && !isFadingOut && !isStartingAnimation) {
-        // Проверяем, что клик был вне сегодняшней ячейки
-        if (!todayElement.contains(event.target)) {
-          // Начинаем процесс плавного исчезновения
-          setIsFadingOut(true);
-          
-          // Через 1400мс убираем все классы, чтобы анимация успела завершиться
-          setTimeout(() => {
-            setHighlightedToday(false);
-            setTodayElement(null);
-            setIsFadingOut(false);
-            
-            // Удаляем классы с элемента
-            if (todayElement) {
-              todayElement.classList.remove("today-highlight", "active", "bounce", "start");
-            }
-          }, 1400);
-        }
-      }
-    };
-
     // Добавляем обработчик клика на весь документ
     document.addEventListener('click', handleClickOutside);
 
@@ -153,7 +175,7 @@ const NewCalendarView = ({ role, user }) => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [highlightedToday, todayElement, isFadingOut, isStartingAnimation]);
+  }, [handleClickOutside]);
 
   // Функция для создания тестовых событий
   const createTestEvents = async () => {
@@ -200,25 +222,35 @@ const NewCalendarView = ({ role, user }) => {
   }, [events]);
 
   const changeMonth = (dir) => {
-    if (isAnimating) return; // Блокируем клики во время анимации
+    // Если анимация перелистывания уже активна, не делаем ничего
+    if (isMonthAnimating) {
+      return;
+    }
     
-    setIsAnimating(true);
+    setIsMonthAnimating(true);
     setAnimationDirection(dir > 0 ? 'right' : 'left');
     
     // Сбрасываем подсветку сегодняшнего дня при смене месяца
-    if (highlightedToday) {
+    if (isTodayActive || isTodayAnimating) {
       setIsFadingOut(true);
+      // Удаляем классы активной анимации и добавляем класс затухания
+      if (todayElement) {
+        todayElement.classList.remove("active", "start");
+        todayElement.classList.add("fading-out");
+      }
+      
       setTimeout(() => {
-        setHighlightedToday(false);
+        setIsTodayAnimating(false);
         setTodayElement(null);
         setIsFadingOut(false);
         setIsStartingAnimation(false);
+        setIsTodayActive(false);
         
         // Удаляем классы с элемента
         if (todayElement) {
-          todayElement.classList.remove("today-highlight", "active", "bounce", "start");
+          todayElement.classList.remove("today-highlight", "active", "bounce", "start", "fading-out");
         }
-      }, 1400);
+      }, 600); // Длительность анимации затухания
     }
     
     // Запускаем анимацию с задержкой для плавного перехода
@@ -226,13 +258,13 @@ const NewCalendarView = ({ role, user }) => {
       setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + dir, 1));
       // Сбрасываем анимацию после смены данных
       setTimeout(() => {
-        setIsAnimating(false);
+        setIsMonthAnimating(false);
         setAnimationDirection('');
       }, 50);
     }, 300); // Длительность анимации
   };
 
-  const goToToday = () => {
+  const startTodayAnimation = useCallback(() => {
     const today = new Date();
     setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     
@@ -247,9 +279,11 @@ const NewCalendarView = ({ role, user }) => {
       const todayElement = document.querySelector(`[data-date="${todayDateString}"]`);
       if (todayElement) {
         setTodayElement(todayElement);
-        setHighlightedToday(true);
         setIsFadingOut(false);
         setIsStartingAnimation(true);
+        
+        // Удаляем все предыдущие классы анимации
+        todayElement.classList.remove("fading-out", "active", "start");
         
         // Начинаем с анимации pressInJelly (мягкое желе)
         todayElement.classList.add("today-highlight", "start");
@@ -265,7 +299,14 @@ const NewCalendarView = ({ role, user }) => {
         });
       }
     }, 100);
-  };
+  }, []);
+
+  const handleCalendarClick = useCallback(() => {
+    if (isTodayActive || isTodayAnimating || isStartingAnimation) return;
+    setIsTodayActive(true);
+    setIsTodayAnimating(true);
+    startTodayAnimation();
+  }, [isTodayActive, isTodayAnimating, isStartingAnimation, startTodayAnimation]);
 
   const handleLogout = async () => {
     try {
@@ -347,7 +388,7 @@ const NewCalendarView = ({ role, user }) => {
             <button
               onClick={() => changeMonth(-1)}
               className="calendar-nav-arrow calendar-nav-arrow-left"
-              disabled={isAnimating}
+              disabled={isMonthAnimating}
             >
               <ArrowLeft />
             </button>
@@ -402,9 +443,20 @@ const NewCalendarView = ({ role, user }) => {
                         } ${
                           day && day.getMonth() !== currentMonth.getMonth() ? 'other-month' : ''
                         } ${
-                          day && isCurrentDay && highlightedToday ? `today-highlight${isFadingOut ? ' fade-out' : isStartingAnimation ? ' start' : ' active'}` : ''
+                          day && isCurrentDay && isTodayAnimating ? `today-highlight${isFadingOut ? ' fading-out' : isStartingAnimation ? ' start' : ' active'}` : ''
                         }`}
-                        onClick={() => day && handleDayClick(day, dayEvents)}
+                        onClick={(e) => {
+                          if (!day) return;
+                          
+                          // На маленьких экранах (< 768px) клик по ячейке открывает модалку добавления события
+                          if (window.innerWidth < 768) {
+                            e.stopPropagation();
+                            handleAddEvent(day);
+                          } else {
+                            // На больших экранах (>= 768px) оставляем текущую логику
+                            handleDayClick(day, dayEvents);
+                          }
+                        }}
                       >
                         {day && (
                           <>
@@ -415,7 +467,7 @@ const NewCalendarView = ({ role, user }) => {
                               )}
                             </div>
                             {dayEvents.length > 0 && (
-                              <div className="events-count">
+                              <div className="events-count event-count">
                                 {dayEvents.length} событий
                               </div>
                             )}
@@ -442,7 +494,7 @@ const NewCalendarView = ({ role, user }) => {
             <button
               onClick={() => changeMonth(1)}
               className="calendar-nav-arrow calendar-nav-arrow-right"
-              disabled={isAnimating}
+              disabled={isMonthAnimating}
             >
               <ArrowRight />
             </button>
@@ -451,9 +503,11 @@ const NewCalendarView = ({ role, user }) => {
           {/* Иконка календаря для перехода к сегодняшней дате */}
           <div className="today-button-container">
             <button
-              onClick={goToToday}
+              ref={calendarBtnRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => { e.stopPropagation(); handleCalendarClick(); }}
               className="today-icon-btn"
-              title="Перейти к сегодняшней дате"
+              aria-label="Перейти к сегодняшней дате"
             >
               <FiCalendar />
             </button>
