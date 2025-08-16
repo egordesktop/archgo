@@ -168,6 +168,45 @@ body {
 	}
 }
 
+/* Единообразный hover-эффект для всех кнопок */
+@media (hover: hover) and (pointer: fine) {
+  button:not(.add-event-btn),
+  .btn,
+  .nav-button,
+  .header-button,
+  .logout-button,
+  .tab-button,
+  .calendar-nav-arrow,
+  .today-icon-btn,
+  .mobile-plus-btn,
+  .close-modal,
+  .save-event-btn {
+    transition: transform 0.25s ease-out;
+  }
+
+  button:not(.add-event-btn):hover,
+  .btn:hover,
+  .nav-button:hover,
+  .header-button:hover,
+  .logout-button:hover,
+  .tab-button:hover,
+  .calendar-nav-arrow:hover,
+  .today-icon-btn:hover,
+  .mobile-plus-btn:hover,
+  .close-modal:hover,
+  .save-event-btn:hover {
+    animation: bounceHover 0.35s ease-out;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounceHover {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1.05); }
+}
+
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
 	.logout-btn {

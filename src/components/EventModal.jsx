@@ -3,10 +3,13 @@ import { ru } from 'date-fns/locale'
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-export default function EventModal({ isOpen, onClose, event }) {
-	console.log('=== Рендер EventModal ===', event);
+export default function EventModal({ isOpen, onClose, event, events }) {
+	console.log('=== Рендер EventModal ===', event, events);
 
-	if (!event) return null
+	// Используем events если есть, иначе fallback на event
+	const eventsToShow = events || (event ? [event] : []);
+	
+	if (eventsToShow.length === 0) return null
 
 	const [isDesktop, setIsDesktop] = useState(false)
 
@@ -81,7 +84,7 @@ export default function EventModal({ isOpen, onClose, event }) {
 							<div className="space-y-4">
 								<div className="flex items-start justify-between">
 									<h2 className="text-xl font-semibold text-gray-900 pr-4">
-										{event.title}
+										{eventsToShow.length > 1 ? `События (${eventsToShow.length})` : eventsToShow[0].title}
 									</h2>
 									<button
 										onClick={onClose}
@@ -92,39 +95,56 @@ export default function EventModal({ isOpen, onClose, event }) {
 										</svg>
 									</button>
 								</div>
-								<div className="text-sm text-gray-600">
-									<strong>Дата:</strong> {format(new Date(event.date), 'dd MMMM yyyy', { locale: ru })}
-								</div>
-								{event.description && (
-									<div>
-										<h3 className="text-sm font-medium text-gray-700 mb-2">Описание:</h3>
-										<div className="text-gray-600 whitespace-pre-wrap">
-											{event.description}
-										</div>
-									</div>
-								)}
-								{event.attachments?.length > 0 && (
-									<div>
-										<h3 className="text-sm font-medium text-gray-700 mb-2">Файлы:</h3>
-										<div className="space-y-2">
-											{event.attachments.map((attachment, index) => (
-												<div key={index} className="flex items-center gap-2">
-													<a
-														href={attachment.url}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="text-blue-600 hover:text-blue-800 underline text-sm"
-													>
-														{attachment.name}
-													</a>
+								
+								{eventsToShow.map((eventItem, index) => (
+									<div key={eventItem.id || index} className="border-b border-gray-200 pb-4 last:border-b-0">
+										{eventsToShow.length > 1 && (
+											<div className="text-sm text-gray-600 mb-2">
+												<strong>Дата:</strong> {format(new Date(eventItem.date), 'dd MMMM yyyy', { locale: ru })}
+											</div>
+										)}
+										{eventsToShow.length === 1 && (
+											<div className="text-sm text-gray-600">
+												<strong>Дата:</strong> {format(new Date(eventItem.date), 'dd MMMM yyyy', { locale: ru })}
+											</div>
+										)}
+										{eventsToShow.length > 1 && (
+											<h3 className="text-lg font-medium text-gray-900 mb-2">
+												{eventItem.title}
+											</h3>
+										)}
+										{eventItem.description && (
+											<div>
+												<h3 className="text-sm font-medium text-gray-700 mb-2">Описание:</h3>
+												<div className="text-gray-600 whitespace-pre-wrap">
+													{eventItem.description}
 												</div>
-											))}
+											</div>
+										)}
+										{eventItem.attachments?.length > 0 && (
+											<div>
+												<h3 className="text-sm font-medium text-gray-700 mb-2">Файлы:</h3>
+												<div className="space-y-2">
+													{eventItem.attachments.map((attachment, index) => (
+														<div key={index} className="flex items-center gap-2">
+															<a
+																href={attachment.url}
+																target="_blank"
+																rel="noopener noreferrer"
+																className="text-blue-600 hover:text-blue-800 underline text-sm"
+															>
+																{attachment.name}
+															</a>
+														</div>
+													))}
+												</div>
+											</div>
+										)}
+										<div className="text-xs text-gray-500 pt-2 border-t">
+											Создано: {format(new Date(eventItem.createdAt), 'dd.MM.yyyy в HH:mm', { locale: ru })}
 										</div>
 									</div>
-								)}
-								<div className="text-xs text-gray-500 pt-2 border-t">
-									Создано: {format(new Date(event.createdAt), 'dd.MM.yyyy в HH:mm', { locale: ru })}
-								</div>
+								))}
 							</div>
 						</div>
 					</motion.div>
