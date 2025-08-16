@@ -576,13 +576,17 @@
   z-index: 1;
 }
 
+.today-highlight.start {
+  animation: pressInJelly 1.1s ease-in-out forwards;
+}
+
 .today-highlight.active {
   border-color: #3b82f6;
-  animation: pulseBorder 4s infinite ease-in-out, pulseScale 3.5s infinite ease-in-out;
+  animation: pulseBorder 4s infinite ease-in-out, pulseScale 3.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .today-highlight.bounce {
-  animation: bounceIn 0.6s ease-out forwards;
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 .today-highlight.fade-out {
@@ -600,18 +604,25 @@
 
 @keyframes pulseScale {
   0%   { transform: scale(0.97); }
-  30%  { transform: scale(1.03); }
-  40%  { transform: scale(1.05); } /* лёгкий овершут */
-  50%  { transform: scale(1.02); } /* возврат */
-  60%  { transform: scale(1.03); }
-  80%  { transform: scale(0.95); } /* лёгкий овершут вниз */
-  90%  { transform: scale(0.98); } /* возврат */
+  25%  { transform: scale(1.02); }
+  50%  { transform: scale(1.04); }
+  75%  { transform: scale(0.98); }
   100% { transform: scale(0.97); }
 }
 
 @keyframes bounceIn {
   0%   { transform: scale(1); }
-  40%  { transform: scale(1.07); }
-  60%  { transform: scale(1.02); }
-  100% { transform: scale(1.03); }
+  30%  { transform: scale(1.08); }
+  50%  { transform: scale(0.95); }
+  70%  { transform: scale(1.03); }
+  85%  { transform: scale(0.98); }
+  100% { transform: scale(1.01); }
+}
+
+@keyframes pressInJelly {
+  0%   { transform: scaleX(1) scaleY(1); }
+  25%  { transform: scaleX(1.05) scaleY(0.9); }  /* продавливание вниз */
+  50%  { transform: scaleX(0.95) scaleY(1.05); } /* отскок вверх */
+  75%  { transform: scaleX(1.02) scaleY(0.98); } /* затухающая волна */
+  100% { transform: scaleX(0.97) scaleY(0.97); } /* мягкий переход к пульсации */
 }

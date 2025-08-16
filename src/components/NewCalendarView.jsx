@@ -24,6 +24,7 @@ const NewCalendarView = ({ role, user }) => {
   const [highlightedToday, setHighlightedToday] = useState(false);
   const [todayElement, setTodayElement] = useState(null);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isStartingAnimation, setIsStartingAnimation] = useState(false);
 
   // Состояние для формы нового события
   const [newEventForm, setNewEventForm] = useState({
@@ -124,13 +125,13 @@ const NewCalendarView = ({ role, user }) => {
   // useEffect для обработки кликов вне сегодняшней ячейки
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (highlightedToday && todayElement && !isFadingOut) {
+      if (highlightedToday && todayElement && !isFadingOut && !isStartingAnimation) {
         // Проверяем, что клик был вне сегодняшней ячейки
         if (!todayElement.contains(event.target)) {
           // Начинаем процесс плавного исчезновения
           setIsFadingOut(true);
           
-          // Через 800мс убираем все классы, чтобы анимация успела завершиться
+          // Через 1400мс убираем все классы, чтобы анимация успела завершиться
           setTimeout(() => {
             setHighlightedToday(false);
             setTodayElement(null);
@@ -138,9 +139,9 @@ const NewCalendarView = ({ role, user }) => {
             
             // Удаляем классы с элемента
             if (todayElement) {
-              todayElement.classList.remove("today-highlight", "active", "bounce");
+              todayElement.classList.remove("today-highlight", "active", "bounce", "start");
             }
-          }, 800);
+          }, 1400);
         }
       }
     };
@@ -152,7 +153,7 @@ const NewCalendarView = ({ role, user }) => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [highlightedToday, todayElement, isFadingOut]);
+  }, [highlightedToday, todayElement, isFadingOut, isStartingAnimation]);
 
   // Функция для создания тестовых событий
   const createTestEvents = async () => {
@@ -211,12 +212,13 @@ const NewCalendarView = ({ role, user }) => {
         setHighlightedToday(false);
         setTodayElement(null);
         setIsFadingOut(false);
+        setIsStartingAnimation(false);
         
         // Удаляем классы с элемента
         if (todayElement) {
-          todayElement.classList.remove("today-highlight", "active", "bounce");
+          todayElement.classList.remove("today-highlight", "active", "bounce", "start");
         }
-      }, 800);
+      }, 1400);
     }
     
     // Запускаем анимацию с задержкой для плавного перехода
@@ -236,7 +238,7 @@ const NewCalendarView = ({ role, user }) => {
     
     // Удаляем предыдущие подсветки
     document.querySelectorAll(".today-highlight").forEach(el => {
-      el.classList.remove("today-highlight", "active", "bounce");
+      el.classList.remove("today-highlight", "active", "bounce", "start");
     });
     
     // Всегда заново находим элемент сегодняшней даты после рендера
@@ -247,15 +249,20 @@ const NewCalendarView = ({ role, user }) => {
         setTodayElement(todayElement);
         setHighlightedToday(true);
         setIsFadingOut(false);
+        setIsStartingAnimation(true);
         
-        // Добавляем классы для плавного появления с bounce-эффектом
-        todayElement.classList.add("today-highlight", "bounce");
+        // Начинаем с анимации pressInJelly (мягкое желе)
+        todayElement.classList.add("today-highlight", "start");
         
-        // После завершения bounce-анимации переключаемся на обычное пульсирование
-        setTimeout(() => {
-          todayElement.classList.remove("bounce");
-          todayElement.classList.add("active");
-        }, 600); // Длительность bounce-анимации
+        // После завершения pressInJelly анимации включаем пульсацию
+        todayElement.addEventListener("animationend", function handler(e) {
+          if (e.animationName === "pressInJelly") {
+            todayElement.classList.remove("start");
+            todayElement.classList.add("active");
+            setIsStartingAnimation(false);
+            todayElement.removeEventListener("animationend", handler);
+          }
+        });
       }
     }, 100);
   };
@@ -395,7 +402,7 @@ const NewCalendarView = ({ role, user }) => {
                         } ${
                           day && day.getMonth() !== currentMonth.getMonth() ? 'other-month' : ''
                         } ${
-                          day && isCurrentDay && highlightedToday ? `today-highlight${isFadingOut ? ' fade-out' : ' active'}` : ''
+                          day && isCurrentDay && highlightedToday ? `today-highlight${isFadingOut ? ' fade-out' : isStartingAnimation ? ' start' : ' active'}` : ''
                         }`}
                         onClick={() => day && handleDayClick(day, dayEvents)}
                       >
