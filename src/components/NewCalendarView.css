@@ -288,6 +288,36 @@
   margin-top: 16px;
 }
 
+/* Иконка календаря */
+.calendar-icon-button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-icon-button:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #1f2937;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.calendar-icon-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Сохраняем старые стили для обратной совместимости */
 .today-button {
   padding: 8px 16px;
   border: 1px solid #d1d5db;
@@ -357,6 +387,16 @@
   .today-button {
     padding: 6px 12px;
     font-size: 13px;
+  }
+  
+  .calendar-icon-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .calendar-icon-button svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
@@ -492,4 +532,63 @@
 .save-event-btn:disabled {
   background: #9ca3af;
   cursor: not-allowed;
+}
+
+.today-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, color .2s ease, border-color .2s ease;
+}
+
+.today-icon-btn:hover {
+  color: #111;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transform: translateY(-1px);
+}
+
+.today-icon-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.today-icon-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Стили для выделения сегодняшней даты */
+.today-highlight {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  animation: pulseBorder 6s infinite ease-in-out;
+  transition: box-shadow 0.8s ease, border-color 0.8s ease;
+  box-shadow: 0 0 0 0 rgba(59,130,246,0);
+  position: relative;
+  z-index: 1;
+}
+
+.today-highlight.active {
+  border-color: #3b82f6;
+  box-shadow: 0 0 20px 8px rgba(59,130,246,0.25);
+}
+
+.today-highlight.fade-out {
+  box-shadow: 0 0 0 0 rgba(59,130,246,0);
+  border-color: transparent;
+}
+
+@keyframes pulseBorder {
+  0%   { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+  40%  { box-shadow: 0 0 20px 8px rgba(59,130,246,0.25); }
+  60%  { box-shadow: 0 0 20px 8px rgba(59,130,246,0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, onSnapshot, query, setDoc, doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FiCalendar } from 'react-icons/fi';
 import { db, auth } from '../firebase';
 import { formatMonthYear, startOfMonthGrid, toDateOnlyString, isTodaySafe } from '../utils/date';
 import DeadlinesList from './DeadlinesList';
@@ -18,6 +19,11 @@ const NewCalendarView = ({ role, user }) => {
   // Состояние для анимации перелистывания
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(''); // 'left' или 'right'
+  
+  // Состояние для выделения сегодняшней даты
+  const [highlightedToday, setHighlightedToday] = useState(false);
+  const [todayElement, setTodayElement] = useState(null);
+  const [isFadingOut, setIsFadingOut] = useState(false);
 
   // Состояние для формы нового события
   const [newEventForm, setNewEventForm] = useState({
@@ -115,6 +121,39 @@ const NewCalendarView = ({ role, user }) => {
     };
   }, []);
 
+  // useEffect для обработки кликов вне сегодняшней ячейки
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (highlightedToday && todayElement && !isFadingOut) {
+        // Проверяем, что клик был вне сегодняшней ячейки
+        if (!todayElement.contains(event.target)) {
+          // Начинаем процесс плавного исчезновения
+          setIsFadingOut(true);
+          
+          // Через 800мс убираем оба класса, чтобы анимация успела завершиться
+          setTimeout(() => {
+            setHighlightedToday(false);
+            setTodayElement(null);
+            setIsFadingOut(false);
+            
+            // Удаляем классы с элемента
+            if (todayElement) {
+              todayElement.classList.remove("today-highlight", "active");
+            }
+          }, 800);
+        }
+      }
+    };
+
+    // Добавляем обработчик клика на весь документ
+    document.addEventListener('click', handleClickOutside);
+
+    // Очистка обработчика
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [highlightedToday, todayElement, isFadingOut]);
+
   // Функция для создания тестовых событий
   const createTestEvents = async () => {
     const testEvents = [
@@ -165,6 +204,21 @@ const NewCalendarView = ({ role, user }) => {
     setIsAnimating(true);
     setAnimationDirection(dir > 0 ? 'right' : 'left');
     
+    // Сбрасываем подсветку сегодняшнего дня при смене месяца
+    if (highlightedToday) {
+      setIsFadingOut(true);
+      setTimeout(() => {
+        setHighlightedToday(false);
+        setTodayElement(null);
+        setIsFadingOut(false);
+        
+        // Удаляем классы с элемента
+        if (todayElement) {
+          todayElement.classList.remove("today-highlight", "active");
+        }
+      }, 800);
+    }
+    
     // Запускаем анимацию с задержкой для плавного перехода
     setTimeout(() => {
       setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + dir, 1));
@@ -177,7 +231,30 @@ const NewCalendarView = ({ role, user }) => {
   };
 
   const goToToday = () => {
-    setCurrentMonth(new Date(2025, 7, 1)); // Возвращаем к августу 2025 для демонстрации
+    const today = new Date();
+    setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    
+    // Удаляем предыдущие подсветки
+    document.querySelectorAll(".today-highlight").forEach(el => {
+      el.classList.remove("today-highlight", "active");
+    });
+    
+    // Всегда заново находим элемент сегодняшней даты после рендера
+    setTimeout(() => {
+      const todayDateString = toDateOnlyString(today);
+      const todayElement = document.querySelector(`[data-date="${todayDateString}"]`);
+      if (todayElement) {
+        setTodayElement(todayElement);
+        setHighlightedToday(true);
+        setIsFadingOut(false);
+        
+        // Добавляем классы для плавного появления
+        todayElement.classList.add("today-highlight");
+        requestAnimationFrame(() => {
+          todayElement.classList.add("active");
+        });
+      }
+    }, 100);
   };
 
   const handleLogout = async () => {
@@ -307,12 +384,15 @@ const NewCalendarView = ({ role, user }) => {
                     return (
                       <div
                         key={key}
+                        data-date={day ? toDateOnlyString(day) : ''}
                         className={`calendar-day calendar-date ${
                           !day ? 'empty' : ''
                         } ${
                           dayEvents.length > 0 ? 'has-events' : ''
                         } ${
                           day && day.getMonth() !== currentMonth.getMonth() ? 'other-month' : ''
+                        } ${
+                          day && isCurrentDay && highlightedToday ? `today-highlight${isFadingOut ? ' fade-out' : ' active'}` : ''
                         }`}
                         onClick={() => day && handleDayClick(day, dayEvents)}
                       >
@@ -358,13 +438,14 @@ const NewCalendarView = ({ role, user }) => {
             </button>
           </div>
 
-          {/* Кнопка "Сегодня" */}
+          {/* Иконка календаря для перехода к сегодняшней дате */}
           <div className="today-button-container">
             <button
               onClick={goToToday}
-              className="today-button"
+              className="today-icon-btn"
+              title="Перейти к сегодняшней дате"
             >
-              Сегодня
+              <FiCalendar />
             </button>
           </div>
         </div>
