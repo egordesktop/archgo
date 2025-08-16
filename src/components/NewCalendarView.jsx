@@ -9,12 +9,33 @@ import DeadlinesList from './DeadlinesList';
 import EventModal from './EventModal';
 import './NewCalendarView.css';
 
+// Хук для определения мобильных устройств
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    window.addEventListener('resize', listener);
+    return () => window.removeEventListener('resize', listener);
+  }, [matches, query]);
+
+  return matches;
+};
+
 const NewCalendarView = ({ role, user }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date(2025, 7, 1)); // Август 2025
   const [events, setEvents] = useState([]);
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' или 'deadlines'
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvents, setSelectedEvents] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  
+  // Определяем мобильные устройства
+  const isMobile = useMediaQuery('(max-width: 767px)');
   
   // Ref для кнопки календаря
   const calendarBtnRef = useRef(null);
@@ -170,10 +191,14 @@ const NewCalendarView = ({ role, user }) => {
   useEffect(() => {
     // Добавляем обработчик клика на весь документ
     document.addEventListener('click', handleClickOutside);
+    
+    // Добавляем обработчик touch событий для мобильных устройств
+    document.addEventListener('touchstart', handleClickOutside);
 
-    // Очистка обработчика
+    // Очистка обработчиков
     return () => {
       document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [handleClickOutside]);
 
@@ -270,7 +295,7 @@ const NewCalendarView = ({ role, user }) => {
     
     // Удаляем предыдущие подсветки
     document.querySelectorAll(".today-highlight").forEach(el => {
-      el.classList.remove("today-highlight", "active", "bounce", "start");
+      el.classList.remove("today-highlight", "active", "bounce", "start", "fading-out");
     });
     
     // Всегда заново находим элемент сегодняшней даты после рендера
@@ -318,7 +343,8 @@ const NewCalendarView = ({ role, user }) => {
 
   const handleDayClick = (day, dayEvents) => {
     if (dayEvents && dayEvents.length > 0) {
-      setSelectedEvent(dayEvents[0]); // Показываем первое событие
+      setSelectedEvent(dayEvents[0]); // Показываем первое событие для обратной совместимости
+      setSelectedEvents(dayEvents); // Сохраняем все события
       setModalOpen(true);
     }
   };
@@ -448,11 +474,10 @@ const NewCalendarView = ({ role, user }) => {
                         onClick={(e) => {
                           if (!day) return;
                           
-                          // На маленьких экранах (< 768px) клик по ячейке открывает модалку добавления события
-                          if (window.innerWidth < 768) {
-                            e.stopPropagation();
-                            handleAddEvent(day);
-                          } else {
+                          // На мобильных устройствах клик по ячейке с событиями открывает модалку
+                          if (isMobile && dayEvents && dayEvents.length > 0) {
+                            handleDayClick(day, dayEvents);
+                          } else if (!isMobile) {
                             // На больших экранах (>= 768px) оставляем текущую логику
                             handleDayClick(day, dayEvents);
                           }
@@ -471,16 +496,18 @@ const NewCalendarView = ({ role, user }) => {
                                 {dayEvents.length} событий
                               </div>
                             )}
-                            <button
-                              className="add-event-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddEvent(day);
-                              }}
-                              title="Добавить событие"
-                            >
-                              +
-                            </button>
+                            {!isMobile && (
+                              <button
+                                className="add-event-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddEvent(day);
+                                }}
+                                title="Добавить событие"
+                              >
+                                +
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -502,15 +529,31 @@ const NewCalendarView = ({ role, user }) => {
 
           {/* Иконка календаря для перехода к сегодняшней дате */}
           <div className="today-button-container">
-            <button
-              ref={calendarBtnRef}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => { e.stopPropagation(); handleCalendarClick(); }}
-              className="today-icon-btn"
-              aria-label="Перейти к сегодняшней дате"
-            >
-              <FiCalendar />
-            </button>
+            <div className="calendar-controls">
+              <button
+                ref={calendarBtnRef}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); handleCalendarClick(); }}
+                className="today-icon-btn"
+                aria-label="Перейти к сегодняшней дате"
+              >
+                <FiCalendar />
+              </button>
+
+              {isMobile && (
+                <button 
+                  className="mobile-plus-btn"
+                  onClick={() => {
+                    const today = new Date();
+                    openModal(today);
+                  }}
+                  aria-label="Добавить событие на сегодня"
+                >
+                  +
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -518,11 +561,16 @@ const NewCalendarView = ({ role, user }) => {
       )}
 
       {/* Модальное окно для событий */}
-      {isModalOpen && selectedEvent && (
+      {isModalOpen && selectedEvents && (
         <EventModal
           isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false);
+            setSelectedEvents(null);
+            setSelectedEvent(null);
+          }}
           event={selectedEvent}
+          events={selectedEvents}
         />
       )}
 

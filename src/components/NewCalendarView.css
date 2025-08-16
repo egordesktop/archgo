@@ -173,8 +173,9 @@
   gap: 8px;
 }
 
+/* Ячейка календаря — всегда квадратная */
 .calendar-day {
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1; /* основной способ */
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 8px;
@@ -184,9 +185,49 @@
   transition: all 0.2s ease;
 }
 
+/* Fallback для браузеров без aspect-ratio */
+@supports not (aspect-ratio: 1/1) {
+  .calendar-day {
+    position: relative;
+    width: 100%;
+    height: auto;
+  }
+
+  .calendar-day::before {
+    content: "";
+    display: block;
+    padding-top: 100%; /* делает квадрат */
+  }
+
+  /* содержимое ячейки фиксируем абсолютно */
+  .calendar-day > * {
+    position: absolute;
+    inset: 0;
+  }
+}
+
 .calendar-day:hover {
   background: #f9fafb;
   border-color: #d1d5db;
+}
+
+/* Эффекты наведения только для ПК-версии */
+@media (hover: hover) and (pointer: fine) {
+  .calendar-day {
+    transition: transform 0.25s ease-out;
+  }
+
+  .calendar-day:hover {
+    animation: bounceHover 0.35s ease-out;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounceHover {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1.05); }
 }
 
 .calendar-day.empty {
@@ -198,10 +239,35 @@
 .calendar-day.has-events {
   background: #fef3c7;
   border-color: #f59e0b;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .calendar-day.has-events:hover {
   background: #fde68a;
+}
+
+.calendar-day.has-events:active {
+  background: #fde68a;
+  transform: scale(0.98);
+}
+
+.calendar-day.has-events .day-number {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.calendar-day.has-events .event-indicator {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .calendar-day.other-month {
@@ -262,6 +328,23 @@
   color: #333;
 }
 
+/* Улучшенные стили кнопки "+" только для ПК-версии */
+@media (hover: hover) and (pointer: fine) {
+  .add-event-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #333;
+    color: #f5f5f5;
+    transition: transform 0.2s ease;
+  }
+
+  .add-event-btn:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    color: #f5f5f5;
+  }
+}
+
 /* Индикатор событий */
 .event-indicator {
   color: #ef4444;
@@ -286,6 +369,42 @@
   display: flex;
   justify-content: center;
   margin-top: 16px;
+}
+
+/* Контейнер для кнопок календаря */
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Мобильная кнопка добавления события */
+.mobile-plus-btn {
+  margin-left: 8px;
+  border: none;
+  background: #000;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-plus-btn:hover {
+  background: #333;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-plus-btn:active {
+  transform: scale(0.95);
 }
 
 /* Иконка календаря */
@@ -355,6 +474,33 @@
   
   .calendar-day {
     padding: 4px;
+    border: 1px solid #e5e7eb; /* Явно указываем тот же цвет границы, что и на ПК */
+    aspect-ratio: 1 / 1; /* обеспечиваем квадратную форму на мобильных */
+  }
+  
+  .calendar-day.has-events {
+    border-color: #f59e0b; /* Явно указываем тот же цвет границы для ячеек с событиями */
+  }
+
+  /* Fallback для мобильных браузеров без aspect-ratio */
+  @supports not (aspect-ratio: 1/1) {
+    .calendar-day {
+      position: relative;
+      width: 100%;
+      height: auto;
+    }
+
+    .calendar-day::before {
+      content: "";
+      display: block;
+      padding-top: 100%; /* делает квадрат */
+    }
+
+    /* содержимое ячейки фиксируем абсолютно */
+    .calendar-day > * {
+      position: absolute;
+      inset: 0;
+    }
   }
   
   .day-number {
@@ -397,6 +543,30 @@
   .calendar-icon-button svg {
     width: 16px;
     height: 16px;
+  }
+
+  /* Стили для кнопки календаря на мобильных */
+  .today-icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+  }
+
+  .today-icon-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  /* Скрываем кнопку добавления события в ячейках на мобильных */
+  .add-event-btn {
+    display: none;
+  }
+}
+
+/* Скрываем мобильную кнопку "+" на ПК */
+@media (min-width: 768px) {
+  .mobile-plus-btn {
+    display: none;
   }
 }
 
@@ -546,6 +716,8 @@
   color: #333;
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, color .2s ease, border-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .today-icon-btn:hover {
@@ -643,5 +815,125 @@
 @media (min-width: 768px) {
   .event-count {
     display: block;
+  }
+}
+
+/* Дополнительные стили для мобильного опыта */
+@media (max-width: 767px) {
+  /* Убеждаемся, что анимация сегодняшней даты работает одинаково на мобильных */
+  .today-highlight {
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: box-shadow 0.8s ease, border-color 0.8s ease, transform 0.8s ease;
+    box-shadow: 0 0 0 0 rgba(59,130,246,0);
+    transform: scale(1);
+    position: relative;
+    z-index: 1;
+    aspect-ratio: 1 / 1; /* обеспечиваем квадратную форму */
+  }
+
+  .today-highlight.start {
+    animation: pressInJelly 1.1s ease-in-out forwards;
+  }
+
+  .today-highlight.active {
+    border-color: #3b82f6;
+    animation: pulseBorder 5s infinite ease-in-out,
+               pulseScale 5s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  }
+
+  .today-highlight.fading-out {
+    animation: breathingFadeOut 0.6s ease-out forwards;
+    border-color: transparent;
+    box-shadow: 0 0 0 0 rgba(59,130,246,0);
+  }
+
+  /* Улучшенные стили для ячеек с событиями на мобильных */
+  .calendar-day.has-events {
+    background: #fef3c7;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+  }
+  
+  .calendar-day.has-events:active {
+    background: #fde68a;
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(245, 158, 11, 0.3);
+  }
+  
+  /* Улучшенная анимация для индикатора событий */
+  .calendar-day.has-events .event-indicator {
+    animation: pulse 2s infinite;
+    color: #ef4444;
+    font-weight: bold;
+  }
+  
+  /* Стили для мобильной кнопки добавления события */
+  .mobile-plus-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #000;
+    color: white;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+    z-index: 100;
+  }
+  
+  .mobile-plus-btn:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  
+  .mobile-plus-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Улучшенные стили для контейнера календаря */
+  .calendar-wrapper {
+    margin-bottom: 80px; /* Место для мобильной кнопки */
+  }
+  
+  /* Стили для лучшего отображения событий на мобильных */
+  .events-count {
+    font-size: 9px;
+    font-weight: 600;
+    color: #374151;
+    background: transparent;
+    padding: 2px 4px;
+    border-radius: 4px;
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+    text-align: center;
+  }
+}
+
+/* Стили для улучшения доступности на мобильных */
+@media (max-width: 767px) {
+  .calendar-day.has-events {
+    /* Увеличиваем область нажатия, но сохраняем квадратную форму */
+    min-height: 60px;
+    aspect-ratio: 1 / 1; /* переопределяем для ячеек с событиями */
+  }
+  
+  .calendar-day.has-events:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Улучшенная читаемость текста */
+  .day-number {
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   }
 }
